@@ -40,16 +40,19 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
             }
         }
 
-
-
-        private void Start()
+        void Start()
         {
             apiKey = OPENAIManager.Instance.apiKey; // Make sure this manager is set up to provide the API key
         }
 
-        public void SetSystemMessage(string message)
+        public void SendMessage(string message, Action<string> onresponce = null, Action<string> onjsonResponce = null)
         {
-            systemMessage = new JObject(new JProperty("role", "system"), new JProperty("content", message));
+            StartCoroutine(SendRequestToChatGPT(message, conversationHistory: null, onresponse: onresponce, onjsonResponse: onjsonResponce));
+        }
+
+        public void AddMessageToConversation(string userMessage, Conversation conversationHistory, Action<string> onresponce = null, Action<string> onjsonResponce = null)
+        {
+            StartCoroutine(SendRequestToChatGPT(userMessage, conversationHistory, onresponse: onresponce, onjsonResponse: onjsonResponce));
         }
 
         private JObject CreateRequestBody(string prompt, Conversation conversationHistory)
@@ -63,7 +66,10 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
             }
             else
             {
-                messages = new JArray();
+                messages = new JArray
+                {
+                    userMessage
+                };
             }
 
 
@@ -108,16 +114,6 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
                     onresponse?.Invoke(response);
                 }
             }
-        }
-
-        public void SendMessage(string message, Action<string> onresponce = null, Action<string> onjsonResponce = null)
-        {
-            StartCoroutine(SendRequestToChatGPT(message, conversationHistory: null, onresponse: onresponce, onjsonResponse: onjsonResponce));
-        }
-
-        public void AddMessageToConversation(string userMessage, Conversation conversationHistory, Action<string> onresponce = null, Action<string> onjsonResponce = null)
-        {
-            StartCoroutine(SendRequestToChatGPT(userMessage, conversationHistory, onresponse: onresponce, onjsonResponse: onjsonResponce));
         }
     }
 }

@@ -2,11 +2,13 @@ using UnityEngine;
 
 namespace Rabeeqiblawi.OpenAI.APIWrapper
 {
+    [RequireComponent(typeof(AudioSource))]
     public class AudioRecorder : MonoBehaviour
     {
         private AudioSource audioSource;
         private bool isRecording = false;
         private AudioClip recordedClip;
+        public MicrophoneSelector MicrophoneSelector;
 
         [SerializeField, HideInInspector] private int selectedMicrophoneIndex = 0;
 
@@ -19,19 +21,21 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
         void Start()
         {
             audioSource = GetComponent<AudioSource>();
+
             if (audioSource == null)
             {
                 Debug.LogError("AudioSource component not found on the GameObject.");
             }
-
-            // Check if the specified microphone index is valid
+            if (MicrophoneSelector != null)
+            {
+                MicIndex = MicrophoneSelector.SelectedMicrophoneIndex;
+            }
             if (MicIndex < 0 || MicIndex >= Microphone.devices.Length)
             {
                 Debug.LogError("Invalid microphone index.");
                 return;
             }
 
-            // Optional: Log the name of the selected microphone
             Debug.Log("Selected Microphone: " + Microphone.devices[MicIndex]);
         }
 

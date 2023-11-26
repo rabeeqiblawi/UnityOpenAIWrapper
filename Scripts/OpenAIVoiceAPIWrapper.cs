@@ -21,7 +21,7 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
         private string speach_url = "https://api.openai.com/v1/audio/speech";
         private string apiKey;
 
-        private void Start()
+        void Start()
         {
             apiKey = OPENAIManager.Instance.apiKey;
         }

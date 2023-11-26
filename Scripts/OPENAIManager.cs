@@ -10,7 +10,7 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
     {
         public static OPENAIManager Instance { get; private set; }
         private ChatGPTAPIWrapper _openAICHatGPTAPIController;
-        public ChatGPTAPIWrapper OpenAICHatGPTAPIWrapper
+        public ChatGPTAPIWrapper ChatGPT
         {
             get
             {
