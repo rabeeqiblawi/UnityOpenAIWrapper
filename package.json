@@ -1,0 +1,9 @@
+{
+    "name": "com.rabeeqiblawi.openaiapiwrapper",
+    "displayName": "OpenAI API Wrapper",
+    "version": "1.0.0",
+    "unity": "2021.2",
+    "description": "A Unity package for wrapping OpenAI's API, providing easy integration of OpenAI's capabilities into Unity projects.",
+    "dependencies": {},
+    "keywords": ["openai", "api", "wrapper", "ai", "unity"]
+}
