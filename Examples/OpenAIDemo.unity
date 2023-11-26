@@ -181,7 +181,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5027065093347476473, guid: 5e8045aa90f300b4ab7b6f63065c72bc, type: 3}
       propertyPath: apiKey
-      value: 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
+      value: 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
+      objectReference: {fileID: 0}
+    - target: {fileID: 8323190008195288436, guid: 5e8045aa90f300b4ab7b6f63065c72bc, type: 3}
+      propertyPath: modelName
+      value: gpt-4-1106-preview
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -280,6 +284,28 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1797136358 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8323190008195288436, guid: 5e8045aa90f300b4ab7b6f63065c72bc, type: 3}
+  m_PrefabInstance: {fileID: 829764730}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 658713ee5bb59e9409402e84063bbd3a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1797136359 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7964219922124555900, guid: 5e8045aa90f300b4ab7b6f63065c72bc, type: 3}
+  m_PrefabInstance: {fileID: 829764730}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 593afb0a837d92048815c34d53c8f518, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1910044309
 GameObject:
   m_ObjectHideFlags: 0
@@ -289,10 +315,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1910044311}
-  - component: {fileID: 1910044310}
   - component: {fileID: 1910044312}
   - component: {fileID: 1910044314}
   - component: {fileID: 1910044313}
+  - component: {fileID: 1910044315}
   m_Layer: 0
   m_Name: Demo
   m_TagString: Untagged
@@ -300,22 +326,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1910044310
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1910044309}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d9db6587fd5c413409338a87e2ee7325, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  recorder: {fileID: 1910044313}
-  audioSource: {fileID: 0}
-  ChatGPT: {fileID: 0}
-  VoiceAPI: {fileID: 0}
 --- !u!4 &1910044311
 Transform:
   m_ObjectHideFlags: 0
@@ -454,3 +464,21 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1910044315
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1910044309}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9db6587fd5c413409338a87e2ee7325, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  recorder: {fileID: 1910044313}
+  audioSource: {fileID: 0}
+  ChatGPT: {fileID: 1797136358}
+  VoiceAPI: {fileID: 1797136359}
+  functions:
+  - {fileID: 11400000, guid: a063d8e2df618f24191e0386bd50c83c, type: 2}
