@@ -50,12 +50,12 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
 
         void Start()
         {
-            apiKey = OPENAIManager.Instance.apiKey; // Make sure this manager is set up to provide the API key
+            apiKey = OpenAI.Instance.ApiKey; // Make sure this manager is set up to provide the API key
         }
 
-        public void SendRequest(string message, List<OpenAITool> functions = null, Action<string> on_response_text = null, Action<string> on_response_josn = null, Action<List<ToolCallResult>> on_response_function = null)
+        public void SendRequest(string message, List<OpenAITool> functions = null, Action<string> on_response_text = null, Action<string> on_response_josn = null, Action<List<ToolCallResult>> on_response_function = null, Action<string> onError = null)
         {
-            StartCoroutine(SendRequestToChatGPT(message, functions: functions, conversationHistory: null, on_response_text: on_response_text, on_response_json: on_response_josn, on_response_function: on_response_function));
+            StartCoroutine(SendRequestToChatGPT(message, functions: functions, conversationHistory: null, on_response_text: on_response_text, on_response_json: on_response_josn, on_response_function: on_response_function, onError: onError));
         }
 
         public void AddMessageToConversation(string userMessage, Conversation conversationHistory, Action<string> onresponce = null, Action<string> onjsonResponce = null)
@@ -106,7 +106,7 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
             print(requestBody.ToString());
             return requestBody;
         }
-        private IEnumerator SendRequestToChatGPT(string prompt, Conversation conversationHistory, List<OpenAITool> functions = null, Action<string> on_response_text = null, Action<string> on_response_json = null, Action<List<ToolCallResult>> on_response_function = null)
+        private IEnumerator SendRequestToChatGPT(string prompt, Conversation conversationHistory, List<OpenAITool> functions = null, Action<string> on_response_text = null, Action<string> on_response_json = null, Action<List<ToolCallResult>> on_response_function = null, Action<string> onError = null)
         {
             JObject requestBodyJson = CreateRequestBody(prompt, conversationHistory, functions);
             string requestBody = requestBodyJson.ToString(Unity.Plastic.Newtonsoft.Json.Formatting.None);
@@ -125,6 +125,7 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
                 if (webRequest.result != UnityWebRequest.Result.Success)
                 {
                     Debug.LogError("Error: " + webRequest.error);
+                    onError.Invoke(webRequest.error);
                 }
                 else
                 {

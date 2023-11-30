@@ -1,49 +1,55 @@
 using Rabeeqiblawi.OpenAI.APIWrapper;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class Demo : MonoBehaviour
+namespace Rabeeqiblawi.OpenAI.Demo
 {
-    public AudioRecorder recorder;
-    public AudioSource audioSource;
-
-    public ChatGPTAPIWrapper ChatGPT;
-    public OpenAIVoiceAPIWrapper VoiceAPI;
-
-    private void Start()
+    public class Demo : MonoBehaviour
     {
-        if (ChatGPT == null)
-            ChatGPT = OPENAIManager.Instance.ChatGPT;
-        recorder = GetComponent<AudioRecorder>();
-    }
+        public AudioRecorder recorder;
+        public AudioSource audioSource;
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Space))
-            recorder.StartRecording();
-        if (Input.GetKeyUp(KeyCode.Space))
-            recorder.StopRecording(play: false, onSaved: SendSTT);
-    }
+        public ChatGPTAPIWrapper ChatGPT;
+        public OpenAIVoiceAPIWrapper VoiceAPI;
+        public List<OpenAITool> functions = new List<OpenAITool>();
 
-    void SendSTT()
-    {
-        OPENAIManager.Instance.OPenAIVoiceAPIController.SendWhisperRequest(Application.persistentDataPath + "/record.wav", "whisper-1", OnRecivedFromSpeachToText);
-    }
+        private void Start()
+        {
+            if (ChatGPT == null)
+                ChatGPT = APIWrapper.OpenAI.Instance.ChatGPT;
+            recorder = GetComponent<AudioRecorder>();
+        }
 
-    void OnRecivedFromSpeachToText(string response)
-    {
-        print(response);
-        ChatGPT.SendMessage(response, onresponce: OnRecivedFormChatGPT);
-    }
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                Boom();
+            }
+        }
 
-    void OnRecivedFormChatGPT(string response)
-    {
-        print(response);
-        VoiceAPI.SendTTSRequest(response, "alloy", OnRecivedFromTextToSpeach);
-    }
+        public void Boom()
+        {
+            ChatGPT.SendRequest("Explode with force of 100", on_response_function: OnRecivedFormChatGPT, functions: functions);
+        }
 
-    void OnRecivedFromTextToSpeach(AudioClip audioClip)
-    {
-        audioSource.clip = audioClip;
-        audioSource.Play();
+        void OnRecivedFormChatGPT(List<ToolCallResult> results)
+        {
+            foreach (var result in results)
+            {
+                print(result.FunctionName);
+                foreach (var param in result.Parameters)
+                {
+                    print(param.Key + " : " + param.Value);
+                }
+
+            }
+        }
+
+        void OnRecivedFromTextToSpeach(AudioClip audioClip)
+        {
+            audioSource.clip = audioClip;
+            audioSource.Play();
+        }
     }
 }

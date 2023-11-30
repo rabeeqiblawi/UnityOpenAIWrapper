@@ -10,11 +10,6 @@ using Unity.Plastic.Newtonsoft.Json;
 namespace Rabeeqiblawi.OpenAI.APIWrapper
 {
 
-    public class WhisperResponse
-    {
-        public string text;
-    }
-
     public class OpenAIVoiceAPIWrapper : MonoBehaviour
     {
         private string whisper_url = "https://api.openai.com/v1/audio/transcriptions";
@@ -23,7 +18,7 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
 
         void Start()
         {
-            apiKey = OPENAIManager.Instance.apiKey;
+            apiKey = OpenAI.Instance.ApiKey;
         }
 
         public void SendWhisperRequest(string filePath, string model, Action<string> onResponse)
@@ -38,33 +33,18 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
 
         private IEnumerator SendTTSRequestCoroutine(string inputText, string voice, Action<AudioClip> onResponse)
         {
-            // Create the request body as a JObject
             JObject requestBodyJson = new JObject
     {
+        { "model", "tts-1" },
         { "model", "tts-1" },
         { "voice", voice },
         { "input", inputText }
     };
-
-            string requestBody = requestBodyJson.ToString();
-            print(requestBody);
-            UnityWebRequest webRequest = new UnityWebRequest(speach_url, "POST");
-
-            byte[] bodyRaw = Encoding.UTF8.GetBytes(requestBody);
-            webRequest.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
-            webRequest.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
-
-            // Set headers
-            webRequest.SetRequestHeader("Content-Type", "application/json");
-            webRequest.SetRequestHeader("Authorization", "Bearer " + apiKey);
-
-
+            UnityWebRequest webRequest = CreateRequestBody(requestBodyJson);
             yield return webRequest.SendWebRequest();
 
             if (webRequest.result != UnityWebRequest.Result.Success)
-            {
                 Debug.LogError("Error: " + webRequest.error);
-            }
             else
             {
                 byte[] audioData = webRequest.downloadHandler.data;
@@ -74,8 +54,22 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
                 {
                     onResponse?.Invoke(clip);
                 }));
-
             }
+        }
+
+        private UnityWebRequest CreateRequestBody(JObject requestBodyJson)
+        {
+            string requestBody = requestBodyJson.ToString();
+            print(requestBody);
+            UnityWebRequest webRequest = new UnityWebRequest(speach_url, "POST");
+
+            byte[] bodyRaw = Encoding.UTF8.GetBytes(requestBody);
+            webRequest.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
+            webRequest.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
+
+            webRequest.SetRequestHeader("Content-Type", "application/json");
+            webRequest.SetRequestHeader("Authorization", "Bearer " + apiKey);
+            return webRequest;
         }
 
         private IEnumerator SendWhisperRequestCoroutine(string filePath, string model, Action<string> onResponse)
@@ -131,12 +125,12 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
                 yield return www.SendWebRequest();
                 AudioClip myClip = DownloadHandlerAudioClip.GetContent(www);
                 onLoaded.Invoke(myClip);
-                //AudioSource aud = GetComponent<AudioSource>();
-                //aud.clip = myClip;
-                //aud.Play();
-                //print(aud.clip.name);
             }
         }
+    }
 
+    public class WhisperResponse
+    {
+        public string text;
     }
 }

@@ -6,40 +6,40 @@ using UnityEngine;
 using UnityEngine.Assertions;
 namespace Rabeeqiblawi.OpenAI.APIWrapper
 {
-    public class OPENAIManager : MonoBehaviour
+    public class OpenAI: MonoBehaviour
     {
-        public static OPENAIManager Instance { get; private set; }
-        private ChatGPTAPIWrapper _openAICHatGPTAPIController;
+        public static OpenAI Instance { get; private set; }
+        private ChatGPTAPIWrapper _chatGPT;
         public ChatGPTAPIWrapper ChatGPT
         {
             get
             {
-                if (_openAICHatGPTAPIController == null)
+                if (_chatGPT == null)
                 {
-                    _openAICHatGPTAPIController = GetComponent<ChatGPTAPIWrapper>();
-                    Assert.IsNotNull(_openAICHatGPTAPIController, "OpenAICHatGPTAPIController not found");
+                    _chatGPT = GetComponent<ChatGPTAPIWrapper>();
+                    Assert.IsNotNull(_chatGPT, "OpenAICHatGPTAPIController not found");
                 }
-                return _openAICHatGPTAPIController;
+                return _chatGPT;
             }
         }
-        private OpenAIVoiceAPIWrapper _oPenAIVoiceAPIController;
-        public OpenAIVoiceAPIWrapper OPenAIVoiceAPIController
+        private OpenAIVoiceAPIWrapper _voiceServices;
+        public OpenAIVoiceAPIWrapper VoiceServices
         {
             get
             {
-                if (_oPenAIVoiceAPIController == null)
+                if (_voiceServices == null)
                 {
-                    _oPenAIVoiceAPIController = GetComponent<OpenAIVoiceAPIWrapper>();
-                    Assert.IsNotNull(_oPenAIVoiceAPIController, "OPenAIVoiceAPIController not found");
+                    _voiceServices = GetComponent<OpenAIVoiceAPIWrapper>();
+                    Assert.IsNotNull(_voiceServices, "OPenAIVoiceAPIController not found");
                 }
-                return _oPenAIVoiceAPIController;
+                return _voiceServices;
             }
         }
 
         string filePath = Application.dataPath + "/openai_key.txt";
         [Header("Put your key in Assets/openai_key.txt")]
-        public bool loadKeyFromFile = false;
-        public string apiKey;
+        public bool LoadKeyFromFile = false;
+        public string ApiKey;
 
         private void Awake()
         {
@@ -49,23 +49,20 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
                 DontDestroyOnLoad(gameObject);
             }
             else
-            {
                 Destroy(gameObject);
-            }
         }
 
         private void Start()
         {
-            if (loadKeyFromFile == true)
+            if (LoadKeyFromFile == true)
                 LoadKey();
         }
-
         private void LoadKey()
         {
             if (File.Exists(filePath))
             {
                 string content = File.ReadAllText(filePath);
-                apiKey = content;
+                ApiKey = content;
             }
         }
     }
