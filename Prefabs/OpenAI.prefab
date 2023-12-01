@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5027065093347476473}
   - component: {fileID: 7964219922124555900}
   - component: {fileID: 8323190008195288436}
+  - component: {fileID: 7078282403924828251}
   m_Layer: 0
   m_Name: OpenAI
   m_TagString: Untagged
@@ -46,8 +47,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b47cba2758e74f447925f56f716e36b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  loadKeyFromFile: 0
-  apiKey: 
+  LoadKeyFromFile: 0
+  ApiKey: 
 --- !u!114 &7964219922124555900
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -74,3 +75,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   modelName: gpt-3.5-turbo
   temperature: 0.7
+--- !u!114 &7078282403924828251
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2773821655082560962}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 675a4bf274e739c41a119d741ad62712, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

@@ -6,9 +6,9 @@ using UnityEngine;
 using UnityEngine.Assertions;
 namespace Rabeeqiblawi.OpenAI.APIWrapper
 {
-    public class OpenAI: MonoBehaviour
+    public class OpenAIManager : MonoBehaviour
     {
-        public static OpenAI Instance { get; private set; }
+        public static OpenAIManager Instance { get; private set; }
         private ChatGPTAPIWrapper _chatGPT;
         public ChatGPTAPIWrapper ChatGPT
         {
@@ -30,9 +30,22 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
                 if (_voiceServices == null)
                 {
                     _voiceServices = GetComponent<OpenAIVoiceAPIWrapper>();
-                    Assert.IsNotNull(_voiceServices, "OPenAIVoiceAPIController not found");
+                    Assert.IsNotNull(_voiceServices, "OPenAIVoiceAPIWrapper not found");
                 }
                 return _voiceServices;
+            }
+        }
+        private OpenAIDalleAPIWrapper _AIDalle;
+        public OpenAIDalleAPIWrapper AIDalle
+        {
+            get
+            {
+                if (_AIDalle == null)
+                {
+                    _AIDalle = GetComponent<OpenAIDalleAPIWrapper>();
+                    Assert.IsNotNull(_AIDalle, "DalleAPI Wrapper not Found");
+                }
+                return _AIDalle;
             }
         }
 

@@ -2,14 +2,14 @@ using System.Collections.Generic;
 using Unity.Plastic.Newtonsoft.Json.Linq;
 using UnityEngine;
 
-public enum parmType
+public enum ParmType
 {
     Integer,
     Number,
     String,
     Boolean,
+    Enum
 }
-
 
 public class OpenAITool : ScriptableObject
 {
@@ -18,8 +18,9 @@ public class OpenAITool : ScriptableObject
     {
         public string name;
         public string description;
-        public parmType type;
+        public ParmType type;
         public bool required;
+        public string[] enumValues;
     }
 
     public string Name;
@@ -28,22 +29,32 @@ public class OpenAITool : ScriptableObject
 
     public JObject ToJson()
     {
-        // Create the properties and required parameters objects
         JObject properties = new JObject();
         JArray requiredParameters = new JArray();
 
         foreach (var param in Parameters)
         {
-            properties[param.name] = new JObject
+            JObject propertyObject = new JObject
             {
-                ["type"] = param.type.ToString().ToLower(),
                 ["description"] = param.description
             };
+
+            if (param.type == ParmType.Enum)
+            {
+                propertyObject["type"] = "string";
+                propertyObject["enum"] = new JArray(param.enumValues);
+            }
+            else
+            {
+                propertyObject["type"] = param.type.ToString().ToLower();
+            }
+
+            properties[param.name] = propertyObject;
+
             if (param.required)
                 requiredParameters.Add(param.name);
         }
 
-        // Construct the parameters object
         JObject parameters = new JObject
         {
             ["type"] = "object",
@@ -51,7 +62,6 @@ public class OpenAITool : ScriptableObject
             ["required"] = requiredParameters
         };
 
-        // Construct the function object
         JObject functionObject = new JObject
         {
             ["name"] = Name,
@@ -59,7 +69,6 @@ public class OpenAITool : ScriptableObject
             ["parameters"] = parameters
         };
 
-        // Construct the final tool object
         JObject toolObject = new JObject
         {
             ["type"] = "function",
@@ -68,6 +77,4 @@ public class OpenAITool : ScriptableObject
 
         return toolObject;
     }
-
-
 }

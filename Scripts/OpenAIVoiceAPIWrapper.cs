@@ -18,7 +18,7 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
 
         void Start()
         {
-            apiKey = OpenAI.Instance.ApiKey;
+            apiKey = OpenAIManager.Instance.ApiKey;
         }
 
         public void SendWhisperRequest(string filePath, string model, Action<string> onResponse)
@@ -35,7 +35,6 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
         {
             JObject requestBodyJson = new JObject
     {
-        { "model", "tts-1" },
         { "model", "tts-1" },
         { "voice", voice },
         { "input", inputText }

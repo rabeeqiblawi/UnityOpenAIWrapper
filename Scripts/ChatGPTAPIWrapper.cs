@@ -1,10 +1,11 @@
 using UnityEngine;
 using UnityEngine.Networking;
-using Unity.Plastic.Newtonsoft.Json.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using Codice.CM.Common;
+using Unity.Plastic.Newtonsoft.Json.Linq;
 
 namespace Rabeeqiblawi.OpenAI.APIWrapper
 {
@@ -50,20 +51,30 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
 
         void Start()
         {
-            apiKey = OpenAI.Instance.ApiKey; // Make sure this manager is set up to provide the API key
+            apiKey = OpenAIManager.Instance.ApiKey; // Make sure this manager is set up to provide the API key
         }
 
-        public void SendRequest(string message, List<OpenAITool> functions = null, Action<string> on_response_text = null, Action<string> on_response_josn = null, Action<List<ToolCallResult>> on_response_function = null, Action<string> onError = null)
+        public void SendRequest(string message, Action<string> on_response_text = null, List<OpenAITool> functions = null,  Action<string> on_response_josn = null, Action<List<ToolCallResult>> on_response_function = null, Action<string> onError = null)
         {
             StartCoroutine(SendRequestToChatGPT(message, functions: functions, conversationHistory: null, on_response_text: on_response_text, on_response_json: on_response_josn, on_response_function: on_response_function, onError: onError));
         }
 
-        public void AddMessageToConversation(string userMessage, Conversation conversationHistory, Action<string> onresponce = null, Action<string> onjsonResponce = null)
+        public void AddMessageToConversation(string userMessage, Conversation conversationHistory, Action<string> onresponce = null, Action<string> onjsonResponce = null, float? frequency_penalty = null, JObject logit_bias = null, int? max_tokens = null, int? n = null, int? seed = null, float? top_p = null, string user = null)
         {
-            StartCoroutine(SendRequestToChatGPT(userMessage, conversationHistory, on_response_text: onresponce, on_response_json: onjsonResponce));
+            StartCoroutine(SendRequestToChatGPT(userMessage, conversationHistory, on_response_text: onresponce, on_response_json: onjsonResponce, frequency_penalty: frequency_penalty, logit_bias: logit_bias, max_tokens: max_tokens, n: n, seed: seed, top_p: top_p, user: user));
         }
 
-        private JObject CreateRequestBody(string prompt, Conversation conversationHistory, List<OpenAITool> functions)
+        private JObject CreateRequestBody(
+    string prompt,
+    Conversation conversationHistory,
+    List<OpenAITool> functions,
+    float? frequency_penalty = null,
+    JObject logit_bias = null,
+    int? max_tokens = null,
+    int? n = null,
+    int? seed = null,
+    float? top_p = null,
+    string user = null)
         {
             JArray messages;
             JObject userMessage = new JObject(new JProperty("role", "user"), new JProperty("content", prompt));
@@ -90,6 +101,22 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
                 new JProperty("temperature", Temperature)
             );
 
+            // Add new parameters if they are provided
+            if (frequency_penalty != null)
+                requestBody.Add(new JProperty("frequency_penalty", frequency_penalty));
+            if (logit_bias != null)
+                requestBody.Add(new JProperty("logit_bias", logit_bias));
+            if (max_tokens != null)
+                requestBody.Add(new JProperty("max_tokens", max_tokens));
+            if (n != null)
+                requestBody.Add(new JProperty("n", n));
+            if (seed != null)
+                requestBody.Add(new JProperty("seed", seed));
+            if (top_p != null)
+                requestBody.Add(new JProperty("top_p", top_p));
+            if (user != null)
+                requestBody.Add(new JProperty("user", user));
+
             // Add functions if they are provided
             if (functions != null && functions.Any())
             {
@@ -103,12 +130,19 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
                 requestBody.Add(new JProperty("tools", functionArray));
                 requestBody.Add(new JProperty("tool_choice", "auto"));
             }
+
             print(requestBody.ToString());
             return requestBody;
         }
-        private IEnumerator SendRequestToChatGPT(string prompt, Conversation conversationHistory, List<OpenAITool> functions = null, Action<string> on_response_text = null, Action<string> on_response_json = null, Action<List<ToolCallResult>> on_response_function = null, Action<string> onError = null)
+        private IEnumerator SendRequestToChatGPT(string prompt, Conversation conversationHistory, float? frequency_penalty = null,
+    JObject logit_bias = null,
+    int? max_tokens = null,
+    int? n = null,
+    int? seed = null,
+    float? top_p = null,
+    string user = null, List<OpenAITool> functions = null, Action<string> on_response_text = null, Action<string> on_response_json = null, Action<List<ToolCallResult>> on_response_function = null, Action<string> onError = null)
         {
-            JObject requestBodyJson = CreateRequestBody(prompt, conversationHistory, functions);
+            JObject requestBodyJson = CreateRequestBody(prompt, conversationHistory, functions, frequency_penalty, logit_bias, max_tokens, n, seed, top_p, user);
             string requestBody = requestBodyJson.ToString(Unity.Plastic.Newtonsoft.Json.Formatting.None);
 
             using (UnityWebRequest webRequest = new UnityWebRequest(baseOpenAIUrl, "POST"))
