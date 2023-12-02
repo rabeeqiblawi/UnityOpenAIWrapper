@@ -59,9 +59,9 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
             StartCoroutine(SendRequestToChatGPT(message, functions: functions, conversationHistory: null, on_response_text: on_response_text, on_response_json: on_response_josn, on_response_function: on_response_function, onError: onError));
         }
 
-        public void AddMessageToConversation(string userMessage, Conversation conversationHistory, Action<string> onresponce = null, Action<string> onjsonResponce = null, float? frequency_penalty = null, JObject logit_bias = null, int? max_tokens = null, int? n = null, int? seed = null, float? top_p = null, string user = null)
+        public void AddMessageToConversation(string userMessage, Conversation conversationHistory, Action<string> onresponce = null, Action<string> onjsonResponce = null, float? frequency_penalty = null, int? max_tokens = null, int? n = null, int? seed = null, float? top_p = null, string user = null)
         {
-            StartCoroutine(SendRequestToChatGPT(userMessage, conversationHistory, on_response_text: onresponce, on_response_json: onjsonResponce, frequency_penalty: frequency_penalty, logit_bias: logit_bias, max_tokens: max_tokens, n: n, seed: seed, top_p: top_p, user: user));
+            StartCoroutine(SendRequestToChatGPT(userMessage, conversationHistory, on_response_text: onresponce, on_response_json: onjsonResponce, frequency_penalty: frequency_penalty, max_tokens: max_tokens, n: n, seed: seed, top_p: top_p, user: user));
         }
 
         private JObject CreateRequestBody(

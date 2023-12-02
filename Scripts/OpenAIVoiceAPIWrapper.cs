@@ -7,26 +7,56 @@ using UnityEngine;
 using UnityEngine.Networking;
 using Unity.Plastic.Newtonsoft.Json.Linq;
 using Unity.Plastic.Newtonsoft.Json;
+using UnityEngine.Profiling;
+
 namespace Rabeeqiblawi.OpenAI.APIWrapper
 {
-
+    [RequireComponent(typeof(AudioRecorder))]
     public class OpenAIVoiceAPIWrapper : MonoBehaviour
     {
         private string whisper_url = "https://api.openai.com/v1/audio/transcriptions";
         private string speach_url = "https://api.openai.com/v1/audio/speech";
         private string apiKey;
+        AudioRecorder recorder;
+        bool stoppedRecording = false;
 
         void Start()
         {
             apiKey = OpenAIManager.Instance.ApiKey;
+            recorder = GetComponent<AudioRecorder>();
         }
 
-        public void SendWhisperRequest(string filePath, string model, Action<string> onResponse)
+        public void StopRecoding()
         {
-            StartCoroutine(SendWhisperRequestCoroutine(filePath, model, onResponse));
+            stoppedRecording = true;
         }
 
-        public void SendTTSRequest(string inputText, string voice, Action<AudioClip> onResponse)
+        public void SendSTTRequest(string model = "whisper-1", Action<string> onResponse = null, bool autoRec = true, float recordTime = 5, bool manual = false)
+        {
+            string filePath = Application.persistentDataPath + "/record.wav";
+            if (autoRec == true)
+            {
+                StartCoroutine(RecordingCoroutine(recordTime, manual, () => StartCoroutine(SendSTTRequestRequestCoroutine(filePath, model, onResponse))));
+            }
+            else
+            {
+                StartCoroutine(SendSTTRequestRequestCoroutine(filePath, model, onResponse));
+            }
+        }
+
+        public void SendSTTRequest(string filePath, string model = "whisper-1", Action<string> onResponse = null, bool autoRec = true, float recordTime = 5, bool manual = false)
+        {
+            if (autoRec == true)
+            {
+                StartCoroutine(RecordingCoroutine(recordTime, manual: manual, () => StartCoroutine(SendSTTRequestRequestCoroutine(filePath, model, onResponse))));
+            }
+            else
+            {
+                StartCoroutine(SendSTTRequestRequestCoroutine(filePath, model, onResponse));
+            }
+        }
+
+        public void SendTTSRequest(string inputText, string voice = "alloy", Action<AudioClip> onResponse = null)
         {
             StartCoroutine(SendTTSRequestCoroutine(inputText, voice, onResponse));
         }
@@ -71,7 +101,7 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
             return webRequest;
         }
 
-        private IEnumerator SendWhisperRequestCoroutine(string filePath, string model, Action<string> onResponse)
+        private IEnumerator SendSTTRequestRequestCoroutine(string filePath, string model, Action<string> onResponse)
         {
             WWWForm form = new WWWForm();
             byte[] fileData = System.IO.File.ReadAllBytes(filePath);
@@ -126,7 +156,25 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
                 onLoaded.Invoke(myClip);
             }
         }
+
+        IEnumerator RecordingCoroutine(float time, bool manual, Action onDoneRecording)
+        {
+            recorder.StartRecording();
+            stoppedRecording = false;
+
+            if (time > 0 && manual == false)
+            {
+                yield return new WaitForSeconds(time);
+            }
+            else
+            {
+                yield return new WaitUntil(() => stoppedRecording);
+            }
+            print("Stopped Recording");
+            recorder.StopRecording(onSaved: () => { onDoneRecording.Invoke(); });
+        }
     }
+
 
     public class WhisperResponse
     {
