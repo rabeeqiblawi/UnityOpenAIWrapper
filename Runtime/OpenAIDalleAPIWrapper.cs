@@ -1,12 +1,12 @@
 using System;
 using System.Collections;
-using System.IO; // Include System.IO for file operations
+using System.IO;
 using System.Text;
-using Unity.Plastic.Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace Rabeeqiblawi.OpenAI.APIWrapper
+namespace Rabeeqiblawi.OpenAI.Runtime
 {
     public class OpenAIDalleAPIWrapper : MonoBehaviour
     {

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.Assertions;
-namespace Rabeeqiblawi.OpenAI.APIWrapper
+namespace Rabeeqiblawi.OpenAI.Runtime
 {
     public class OpenAIManager : MonoBehaviour
     {

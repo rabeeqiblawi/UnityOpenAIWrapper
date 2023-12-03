@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Rabeeqiblawi.OpenAI.APIWrapper
+namespace Rabeeqiblawi.OpenAI.Runtime
 {
     public class Demo : MonoBehaviour
     {

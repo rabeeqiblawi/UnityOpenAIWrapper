@@ -4,10 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 using System.Linq;
-using Codice.CM.Common;
-using Unity.Plastic.Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
-namespace Rabeeqiblawi.OpenAI.APIWrapper
+namespace Rabeeqiblawi.OpenAI.Runtime
 {
     public class Conversation
     {
@@ -143,7 +143,7 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
     string user = null, List<OpenAITool> functions = null, Action<string> on_response_text = null, Action<string> on_response_json = null, Action<List<ToolCallResult>> on_response_function = null, Action<string> onError = null)
         {
             JObject requestBodyJson = CreateRequestBody(prompt, conversationHistory, functions, frequency_penalty, logit_bias, max_tokens, n, seed, top_p, user);
-            string requestBody = requestBodyJson.ToString(Unity.Plastic.Newtonsoft.Json.Formatting.None);
+            string requestBody = requestBodyJson.ToString(Formatting.None);
 
             using (UnityWebRequest webRequest = new UnityWebRequest(baseOpenAIUrl, "POST"))
             {

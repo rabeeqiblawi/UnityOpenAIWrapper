@@ -5,11 +5,11 @@ using System.Collections;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
-using Unity.Plastic.Newtonsoft.Json.Linq;
-using Unity.Plastic.Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using UnityEngine.Profiling;
 
-namespace Rabeeqiblawi.OpenAI.APIWrapper
+namespace Rabeeqiblawi.OpenAI.Runtime
 {
     [RequireComponent(typeof(AudioRecorder))]
     public class OpenAIVoiceAPIWrapper : MonoBehaviour

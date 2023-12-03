@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Rabeeqiblawi.OpenAI.APIWrapper
+namespace Rabeeqiblawi.OpenAI.Runtime
 {
     [RequireComponent(typeof(AudioSource))]
     public class AudioRecorder : MonoBehaviour
@@ -10,7 +10,6 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
         private AudioClip recordedClip;
         [SerializeField, HideInInspector] private int selectedMicrophoneIndex = 0;
 
-        public MicrophoneSelector MicrophoneSelector;
         public int MicIndex
         {
             get => selectedMicrophoneIndex;
@@ -26,16 +25,13 @@ namespace Rabeeqiblawi.OpenAI.APIWrapper
                 Debug.LogError("Missing Audio Source");
                 return;
             }
-            if (MicrophoneSelector != null)
-                MicIndex = MicrophoneSelector.SelectedMicrophoneIndex;
-            
+
             if (MicIndex < 0 || MicIndex >= Microphone.devices.Length)
             {
                 Debug.LogError("Invalid microphone index.");
                 return;
             }
         }
-
         public void StartRecording()
         {
             recordedClip = Microphone.Start(Microphone.devices[MicIndex], false, 10, 44100);

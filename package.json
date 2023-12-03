@@ -5,6 +5,8 @@
     "author": {"name": "Rabee Qiblawi","email": "rabeeqiblawi@gmail.com"},
     "unity": "2021.2",
     "description": "A Unity package for wrapping OpenAI's API, providing easy integration of OpenAI's capabilities into Unity projects. Features include ChatGPT Integration for sending and receiving messages using ChatGPT, Voice Recognition with Whisper for converting speech to text, and Text-to-Speech for converting text to speech using OpenAI's voice models.",
-    "dependencies": {},
+    "dependencies": {
+        "com.unity.nuget.newtonsoft-json": "3.2.1"
+    },
     "keywords": ["openai", "api", "wrapper", "ai", "unity"]
 }

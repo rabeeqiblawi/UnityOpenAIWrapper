@@ -1,6 +1,6 @@
 {
     "name": "Assem",
-    "rootNamespace": "",
+    "rootNamespace": "rabeeqiblawi.OpenAI.Runtime",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -9,12 +9,6 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [
-        {
-            "name": "com.rabeeqiblawi.openaiapiwrapper",
-            "expression": "",
-            "define": ""
-        }
-    ],
+    "versionDefines": [],
     "noEngineReferences": false
 }
