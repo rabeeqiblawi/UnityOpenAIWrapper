@@ -11,6 +11,7 @@ public enum ParmType
     Enum
 }
 
+[CreateAssetMenu(fileName = "OpenAIFunctionDesctiption", menuName = "OpenAI/FunctionDescription", order = 1)]
 public class OpenAITool : ScriptableObject
 {
     [System.Serializable]
