@@ -54,9 +54,9 @@ namespace Rabeeqiblawi.OpenAI.Runtime
             apiKey = OpenAIManager.Instance.ApiKey; // Make sure this manager is set up to provide the API key
         }
 
-        public void SendRequest(string message, Action<string> on_response_text = null, List<OpenAITool> functions = null,  Action<string> on_response_josn = null, Action<List<ToolCallResult>> on_response_function = null, Action<string> onError = null)
+        public void SendRequest(string message, Action<string> response = null, List<OpenAITool> functions = null, Action<string> jsonResponse = null, Action<List<ToolCallResult>> toolsResponse = null, Action<string> onError = null)
         {
-            StartCoroutine(SendRequestToChatGPT(message, functions: functions, conversationHistory: null, on_response_text: on_response_text, on_response_json: on_response_josn, on_response_function: on_response_function, onError: onError));
+            StartCoroutine(SendRequestToChatGPT(message, functions: functions, conversationHistory: null, on_response_text: response, on_response_json: jsonResponse, on_response_function: toolsResponse, onError: onError));
         }
 
         public void AddMessageToConversation(string userMessage, Conversation conversationHistory, Action<string> onresponce = null, Action<string> onjsonResponce = null, float? frequency_penalty = null, int? max_tokens = null, int? n = null, int? seed = null, float? top_p = null, string user = null)
@@ -89,7 +89,6 @@ namespace Rabeeqiblawi.OpenAI.Runtime
                 messages = new JArray { userMessage };
             }
 
-            // Assuming 'systemMessage' and 'modelName' are defined elsewhere in your class
             if (systemMessage != null)
             {
                 messages.Add(systemMessage);
@@ -101,7 +100,6 @@ namespace Rabeeqiblawi.OpenAI.Runtime
                 new JProperty("temperature", Temperature)
             );
 
-            // Add new parameters if they are provided
             if (frequency_penalty != null)
                 requestBody.Add(new JProperty("frequency_penalty", frequency_penalty));
             if (logit_bias != null)
@@ -117,7 +115,6 @@ namespace Rabeeqiblawi.OpenAI.Runtime
             if (user != null)
                 requestBody.Add(new JProperty("user", user));
 
-            // Add functions if they are provided
             if (functions != null && functions.Any())
             {
                 JArray functionArray = new JArray();
