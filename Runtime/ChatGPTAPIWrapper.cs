@@ -32,26 +32,21 @@ namespace Rabeeqiblawi.OpenAI.Runtime
 
     public class ChatGPTAPIWrapper : MonoBehaviour
     {
-        private string baseOpenAIUrl = "https://api.openai.com/v1/chat/completions";
-        private string apiKey;
-        public string modelName = "gpt-3.5-turbo";
-        private JObject systemMessage = null;
-        [SerializeField] private float temperature = 0.7f;
+        private string _baseOpenAIUrl = "https://api.openai.com/v1/chat/completions";
+        private string _apiKey;
+        public string _modelName = "gpt-3.5-turbo";
+        private JObject _systemMessage = null;
+
+        [SerializeField] private float _temperature = 0.7f;
         public float Temperature
         {
-            get
-            {
-                return temperature;
-            }
-            set
-            {
-                temperature = Mathf.Clamp(value, 0.0f, 1.0f);
-            }
+            get => _temperature;
+            set => _temperature = Mathf.Clamp(value, 0.0f, 1.0f);
         }
 
         void Start()
         {
-            apiKey = OpenAIManager.Instance.ApiKey; // Make sure this manager is set up to provide the API key
+            _apiKey = OpenAIManager.Instance.ApiKey; // Make sure this manager is set up to provide the API key
         }
 
         public void SendRequest(string message, Action<string> response = null, List<OpenAITool> functions = null, Action<string> jsonResponse = null, Action<List<ToolCallResult>> toolsResponse = null, Action<string> onError = null)
@@ -89,13 +84,13 @@ namespace Rabeeqiblawi.OpenAI.Runtime
                 messages = new JArray { userMessage };
             }
 
-            if (systemMessage != null)
+            if (_systemMessage != null)
             {
-                messages.Add(systemMessage);
+                messages.Add(_systemMessage);
             }
 
             JObject requestBody = new JObject(
-                new JProperty("model", modelName),
+                new JProperty("model", _modelName),
                 new JProperty("messages", messages),
                 new JProperty("temperature", Temperature)
             );
@@ -142,14 +137,14 @@ namespace Rabeeqiblawi.OpenAI.Runtime
             JObject requestBodyJson = CreateRequestBody(prompt, conversationHistory, functions, frequency_penalty, logit_bias, max_tokens, n, seed, top_p, user);
             string requestBody = requestBodyJson.ToString(Formatting.None);
 
-            using (UnityWebRequest webRequest = new UnityWebRequest(baseOpenAIUrl, "POST"))
+            using (UnityWebRequest webRequest = new UnityWebRequest(_baseOpenAIUrl, "POST"))
             {
                 byte[] jsonToSend = new System.Text.UTF8Encoding().GetBytes(requestBody);
                 webRequest.uploadHandler = (UploadHandler)new UploadHandlerRaw(jsonToSend);
                 webRequest.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
 
                 webRequest.SetRequestHeader("Content-Type", "application/json");
-                webRequest.SetRequestHeader("Authorization", "Bearer " + apiKey);
+                webRequest.SetRequestHeader("Authorization", "Bearer " + _apiKey);
 
                 yield return webRequest.SendWebRequest();
 
