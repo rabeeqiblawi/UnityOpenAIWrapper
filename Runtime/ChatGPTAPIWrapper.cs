@@ -30,11 +30,21 @@ namespace Rabeeqiblawi.OpenAI.Runtime
         public Dictionary<string, string> Parameters;
     }
 
+    public enum APIMode
+    {
+        ChatCompletion,
+        Responses
+    }
+
     public class ChatGPTAPIWrapper : MonoBehaviour
     {
-        private string _baseOpenAIUrl = "https://api.openai.com/v1/chat/completions";
+        private string _chatCompletionUrl = "https://api.openai.com/v1/chat/completions";
+        private string _responsesUrl = "https://api.openai.com/v1/responses";
+        
+        public APIMode Mode = APIMode.Responses;
+
         private string _apiKey;
-        public string _modelName = "gpt-3.5-turbo";
+        public string _modelName = "gpt-5.1-chat-latest";
         private JObject _systemMessage = null;
 
         [SerializeField] private float _temperature = 0.7f;
@@ -49,14 +59,14 @@ namespace Rabeeqiblawi.OpenAI.Runtime
             _apiKey = OpenAIManager.Instance.ApiKey; // Make sure this manager is set up to provide the API key
         }
 
-        public void SendRequest(string message, Action<string> response = null, List<OpenAITool> functions = null, Action<string> jsonResponse = null, Action<List<ToolCallResult>> toolsResponse = null, Action<string> onError = null)
+        public void SendRequest(string message, Action<string> response = null, List<OpenAITool> functions = null, Action<string> jsonResponse = null, Action<List<ToolCallResult>> toolsResponse = null, Action<string> onError = null, JObject response_format = null, AudioClip audioInput = null, Action<AudioClip> audioResponse = null)
         {
-            StartCoroutine(SendRequestToChatGPT(message, functions: functions, conversationHistory: null, on_response_text: response, on_response_json: jsonResponse, on_response_function: toolsResponse, onError: onError));
+            StartCoroutine(SendRequestToChatGPT(message, functions: functions, conversationHistory: null, on_response_text: response, on_response_json: jsonResponse, on_response_function: toolsResponse, onError: onError, response_format: response_format, audioInput: audioInput, on_response_audio: audioResponse));
         }
 
-        public void AddMessageToConversation(string userMessage, Conversation conversationHistory, Action<string> onresponce = null, Action<string> onjsonResponce = null, float? frequency_penalty = null, int? max_tokens = null, int? n = null, int? seed = null, float? top_p = null, string user = null)
+        public void AddMessageToConversation(string userMessage, Conversation conversationHistory, Action<string> onresponce = null, Action<string> onjsonResponce = null, float? frequency_penalty = null, int? max_tokens = null, int? n = null, int? seed = null, float? top_p = null, string user = null, JObject response_format = null, AudioClip audioInput = null, Action<AudioClip> audioResponse = null)
         {
-            StartCoroutine(SendRequestToChatGPT(userMessage, conversationHistory, on_response_text: onresponce, on_response_json: onjsonResponce, frequency_penalty: frequency_penalty, max_tokens: max_tokens, n: n, seed: seed, top_p: top_p, user: user));
+            StartCoroutine(SendRequestToChatGPT(userMessage, conversationHistory, on_response_text: onresponce, on_response_json: onjsonResponce, frequency_penalty: frequency_penalty, max_tokens: max_tokens, n: n, seed: seed, top_p: top_p, user: user, response_format: response_format, audioInput: audioInput, on_response_audio: audioResponse));
         }
 
         private JObject CreateRequestBody(
@@ -69,10 +79,34 @@ namespace Rabeeqiblawi.OpenAI.Runtime
     int? n = null,
     int? seed = null,
     float? top_p = null,
-    string user = null)
+    string user = null,
+    JObject response_format = null,
+    AudioClip audioInput = null)
         {
             JArray messages;
-            JObject userMessage = new JObject(new JProperty("role", "user"), new JProperty("content", prompt));
+            JObject userMessage;
+
+            if (audioInput != null)
+            {
+                string base64Audio = ConvertAudioClipToBase64(audioInput);
+                userMessage = new JObject(
+                    new JProperty("role", "user"),
+                    new JProperty("content", new JArray(
+                        new JObject(new JProperty("type", "text"), new JProperty("text", prompt)),
+                        new JObject(
+                            new JProperty("type", "input_audio"), 
+                            new JProperty("input_audio", new JObject(
+                                new JProperty("data", base64Audio),
+                                new JProperty("format", "wav")
+                            ))
+                        )
+                    ))
+                );
+            }
+            else
+            {
+                userMessage = new JObject(new JProperty("role", "user"), new JProperty("content", prompt));
+            }
 
             if (conversationHistory != null)
             {
@@ -91,9 +125,17 @@ namespace Rabeeqiblawi.OpenAI.Runtime
 
             JObject requestBody = new JObject(
                 new JProperty("model", _modelName),
-                new JProperty("messages", messages),
                 new JProperty("temperature", Temperature)
             );
+
+            if (Mode == APIMode.ChatCompletion)
+            {
+                requestBody.Add(new JProperty("messages", messages));
+            }
+            else
+            {
+                requestBody.Add(new JProperty("input", messages));
+            }
 
             if (frequency_penalty != null)
                 requestBody.Add(new JProperty("frequency_penalty", frequency_penalty));
@@ -109,6 +151,8 @@ namespace Rabeeqiblawi.OpenAI.Runtime
                 requestBody.Add(new JProperty("top_p", top_p));
             if (user != null)
                 requestBody.Add(new JProperty("user", user));
+            if (response_format != null)
+                requestBody.Add(new JProperty("response_format", response_format));
 
             if (functions != null && functions.Any())
             {
@@ -132,12 +176,21 @@ namespace Rabeeqiblawi.OpenAI.Runtime
     int? n = null,
     int? seed = null,
     float? top_p = null,
-    string user = null, List<OpenAITool> functions = null, Action<string> on_response_text = null, Action<string> on_response_json = null, Action<List<ToolCallResult>> on_response_function = null, Action<string> onError = null)
+    string user = null, List<OpenAITool> functions = null, Action<string> on_response_text = null, Action<string> on_response_json = null, Action<List<ToolCallResult>> on_response_function = null, Action<string> onError = null, JObject response_format = null, AudioClip audioInput = null, Action<AudioClip> on_response_audio = null)
         {
-            JObject requestBodyJson = CreateRequestBody(prompt, conversationHistory, functions, frequency_penalty, logit_bias, max_tokens, n, seed, top_p, user);
-            string requestBody = requestBodyJson.ToString(Formatting.None);
+            JObject requestBodyJson = CreateRequestBody(prompt, conversationHistory, functions, frequency_penalty, logit_bias, max_tokens, n, seed, top_p, user, response_format, audioInput);
+            
+            // If audio output is requested, add modalities
+            if (on_response_audio != null)
+            {
+                requestBodyJson["modalities"] = new JArray("text", "audio");
+                requestBodyJson["audio"] = new JObject(new JProperty("voice", "alloy"), new JProperty("format", "wav"));
+            }
 
-            using (UnityWebRequest webRequest = new UnityWebRequest(_baseOpenAIUrl, "POST"))
+            string requestBody = requestBodyJson.ToString(Formatting.None);
+            string url = Mode == APIMode.ChatCompletion ? _chatCompletionUrl : _responsesUrl;
+
+            using (UnityWebRequest webRequest = new UnityWebRequest(url, "POST"))
             {
                 byte[] jsonToSend = new System.Text.UTF8Encoding().GetBytes(requestBody);
                 webRequest.uploadHandler = (UploadHandler)new UploadHandlerRaw(jsonToSend);
@@ -157,14 +210,55 @@ namespace Rabeeqiblawi.OpenAI.Runtime
                 {
                     string jsonResponse = webRequest.downloadHandler.text;
                     JObject jsonObject = JObject.Parse(jsonResponse);
-                    string response = jsonObject["choices"][0]["message"]["content"].ToString();
+                    string response = "";
+                    if (Mode == APIMode.ChatCompletion)
+                    {
+                        response = jsonObject["choices"][0]["message"]["content"].ToString();
+                    }
+                    else
+                    {
+                        // Assuming Responses API returns 'output' object with 'content'
+                        // Adjust this based on actual API response if different
+                        if (jsonObject["output"] != null && jsonObject["output"]["content"] != null)
+                        {
+                            response = jsonObject["output"]["content"].ToString();
+                        }
+                        else if (jsonObject["choices"] != null) // Fallback if it still uses choices
+                        {
+                            response = jsonObject["choices"][0]["message"]["content"].ToString();
+                        }
+                        else
+                        {
+                            Debug.LogError("Unknown response structure: " + jsonResponse);
+                        }
+                    }
 
                     if (conversationHistory != null)
                         conversationHistory.AddMessage(new JObject(new JProperty("role", "assistant"), new JProperty("content", response)));
+                    
                     if (on_response_function != null)
                     {
                         List<ToolCallResult> responseFunctions = ExtractToolCalls(jsonObject);
                         on_response_function.Invoke(responseFunctions);
+                    }
+
+                    if (on_response_audio != null)
+                    {
+                        string audioData = null;
+                        if (Mode == APIMode.ChatCompletion)
+                        {
+                            audioData = jsonObject["choices"]?[0]?["message"]?["audio"]?["data"]?.ToString();
+                        }
+                        else
+                        {
+                            audioData = jsonObject["output"]?["audio"]?["data"]?.ToString();
+                        }
+
+                        if (!string.IsNullOrEmpty(audioData))
+                        {
+                            AudioClip clip = ConvertBase64ToAudioClip(audioData);
+                            on_response_audio.Invoke(clip);
+                        }
                     }
 
                     on_response_json?.Invoke(jsonResponse);
@@ -173,9 +267,49 @@ namespace Rabeeqiblawi.OpenAI.Runtime
             }
         }
 
+        private string ConvertAudioClipToBase64(AudioClip clip)
+        {
+            var samples = new float[clip.samples * clip.channels];
+            clip.GetData(samples, 0);
+            byte[] bytes = new byte[samples.Length * 2];
+            int rescaleFactor = 32767;
+            for (int i = 0; i < samples.Length; i++)
+            {
+                short value = (short)(samples[i] * rescaleFactor);
+                BitConverter.GetBytes(value).CopyTo(bytes, i * 2);
+            }
+            return Convert.ToBase64String(bytes);
+        }
+
+        private AudioClip ConvertBase64ToAudioClip(string base64)
+        {
+            byte[] bytes = Convert.FromBase64String(base64);
+            float[] samples = new float[bytes.Length / 2];
+            for (int i = 0; i < samples.Length; i++)
+            {
+                short value = BitConverter.ToInt16(bytes, i * 2);
+                samples[i] = value / 32767f;
+            }
+            AudioClip clip = AudioClip.Create("GeneratedAudio", samples.Length, 1, 24000, false);
+            clip.SetData(samples, 0);
+            return clip;
+        }
+
         private List<ToolCallResult> ExtractToolCalls(JObject jsonObject)
         {
-            var toolCalls = jsonObject["choices"][0]["message"]["tool_calls"];
+            JToken toolCalls = null;
+            if (Mode == APIMode.ChatCompletion)
+            {
+                toolCalls = jsonObject["choices"]?[0]?["message"]?["tool_calls"];
+            }
+            else
+            {
+                // Assuming Responses API returns tool_calls in output
+                toolCalls = jsonObject["output"]?["tool_calls"];
+                if (toolCalls == null) // Fallback
+                     toolCalls = jsonObject["choices"]?[0]?["message"]?["tool_calls"];
+            }
+
             List<ToolCallResult> toolCallResults = new List<ToolCallResult>();
 
             if (toolCalls != null)

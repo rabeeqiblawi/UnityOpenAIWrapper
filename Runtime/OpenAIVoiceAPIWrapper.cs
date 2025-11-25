@@ -12,6 +12,8 @@ using UnityEngine.Profiling;
 namespace Rabeeqiblawi.OpenAI.Runtime
 {
     [RequireComponent(typeof(AudioRecorder))]
+    // Note: For conversational audio (chatting with audio), consider using ChatGPTAPIWrapper with Multimodal Audio support.
+    // This wrapper is best for standalone TTS/STT tasks.
     public class OpenAIVoiceAPIWrapper : MonoBehaviour
     {
         private string whisper_url = "https://api.openai.com/v1/audio/transcriptions";
@@ -31,7 +33,7 @@ namespace Rabeeqiblawi.OpenAI.Runtime
             stoppedRecording = true;
         }
 
-        public void SendSTTRequest(string model = "whisper-1", Action<string> response = null, bool autoRec = true, float recordTime = 5, string language="en")
+        public void SendSTTRequest(string model = "gpt-4o-transcribe", Action<string> response = null, bool autoRec = true, float recordTime = 5, string language="en")
         {
             string filePath = Application.persistentDataPath + "/record.wav";
             if (autoRec == false)
@@ -44,7 +46,7 @@ namespace Rabeeqiblawi.OpenAI.Runtime
             }
         }
 
-        public void SendSTTRequest(string filePath, string model = "whisper-1", Action<string> onResponse = null, bool autoRec = true, float recordTime = 5, string language = "en")
+        public void SendSTTRequest(string filePath, string model = "gpt-4o-transcribe", Action<string> onResponse = null, bool autoRec = true, float recordTime = 5, string language = "en")
         {
             if (autoRec == true)
             {
@@ -56,19 +58,44 @@ namespace Rabeeqiblawi.OpenAI.Runtime
             }
         }
 
-        public void SendTTSRequest(string inputText, string voice = "alloy", Action<AudioClip> response = null)
+        public void SendSTTRequest(string model = "gpt-4o-transcribe", Action<WhisperResponse> response = null, bool autoRec = true, float recordTime = 5, string language = "en")
         {
-            StartCoroutine(SendTTSRequestCoroutine(inputText, voice, response));
+            string filePath = Application.persistentDataPath + "/record.wav";
+            if (autoRec == false)
+            {
+                StartCoroutine(RecordingCoroutine(recordTime, autoRec, () => StartCoroutine(SendSTTRequestRequestCoroutine(filePath, model, language, response))));
+            }
+            else
+            {
+                StartCoroutine(SendSTTRequestRequestCoroutine(filePath, model, language, response));
+            }
         }
 
-        private IEnumerator SendTTSRequestCoroutine(string inputText, string voice, Action<AudioClip> onResponse)
+        public void SendSTTRequest(string filePath, string model = "gpt-4o-transcribe", Action<WhisperResponse> onResponse = null, bool autoRec = true, float recordTime = 5, string language = "en")
+        {
+            if (autoRec == true)
+            {
+                StartCoroutine(RecordingCoroutine(recordTime, autoRecord: autoRec, () => StartCoroutine(SendSTTRequestRequestCoroutine(filePath, model, language, onResponse))));
+            }
+            else
+            {
+                StartCoroutine(SendSTTRequestRequestCoroutine(filePath, model, language, onResponse));
+            }
+        }
+
+        public void SendTTSRequest(string inputText, string voice = "alloy", string model = "gpt-4o-mini-tts", Action<AudioClip> response = null)
+        {
+            StartCoroutine(SendTTSRequestCoroutine(inputText, voice, model, response));
+        }
+
+        private IEnumerator SendTTSRequestCoroutine(string inputText, string voice, string model, Action<AudioClip> onResponse)
         {
             JObject requestBodyJson = new JObject
-    {
-        { "model", "tts-1" },
-        { "voice", voice },
-        { "input", inputText }
-    };
+            {
+                { "model", model },
+                { "voice", voice },
+                { "input", inputText }
+            };
             UnityWebRequest webRequest = CreateRequestBody(requestBodyJson);
             yield return webRequest.SendWebRequest();
 
@@ -130,6 +157,35 @@ namespace Rabeeqiblawi.OpenAI.Runtime
             }
         }
 
+        private IEnumerator SendSTTRequestRequestCoroutine(string filePath, string model, string language, Action<WhisperResponse> onResponse)
+        {
+            WWWForm form = new WWWForm();
+            byte[] fileData = System.IO.File.ReadAllBytes(filePath);
+            form.AddBinaryData("file", fileData, System.IO.Path.GetFileName(filePath), "audio/mpeg");
+            form.AddField("model", model);
+            form.AddField("language", language);
+
+            using (UnityWebRequest webRequest = UnityWebRequest.Post(whisper_url, form))
+            {
+                webRequest.SetRequestHeader("Authorization", "Bearer " + apiKey);
+
+                yield return webRequest.SendWebRequest();
+
+                if (webRequest.result != UnityWebRequest.Result.Success)
+                {
+                    Debug.LogError("Error: " + webRequest.error);
+                    onResponse?.Invoke(null);
+                }
+                else
+                {
+                    string jsonResponse = webRequest.downloadHandler.text;
+                    var textresp = JsonConvert.DeserializeObject<WhisperResponse>(jsonResponse);
+
+                    onResponse?.Invoke(textresp);
+                }
+            }
+        }
+
         public static float[] ConvertByteToFloat(byte[] byteArray)
         {
             if (byteArray.Length % 4 != 0)
@@ -180,5 +236,21 @@ namespace Rabeeqiblawi.OpenAI.Runtime
     public class WhisperResponse
     {
         public string text;
+        public Usage usage;
+    }
+
+    public class Usage
+    {
+        public string type;
+        public int input_tokens;
+        public InputTokenDetails input_token_details;
+        public int output_tokens;
+        public int total_tokens;
+    }
+
+    public class InputTokenDetails
+    {
+        public int text_tokens;
+        public int audio_tokens;
     }
 }
