@@ -48,7 +48,7 @@ namespace Rabeeqiblawi.OpenAI.Runtime
             UnityWebRequest webRequest = CreateRequestBody(requestBodyJson);
             yield return webRequest.SendWebRequest();
 
-            }
+            HandleResponse(webRequest, onResponse);
         }
 
         private IEnumerator SendEditRequestCoroutine(Texture2D image, string prompt, int n, string size, string model, Action<Texture2D> onResponse)
